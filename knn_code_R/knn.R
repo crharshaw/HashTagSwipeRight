@@ -10,12 +10,25 @@ knn_impute_single <- function(rmat, D, ind, k, common=0){
   
   # get distances between row i and all rows m != i
   n = nrow(rmat)
-  d_low <- foreach(m=1:(i-1), .combine='c') %dopar% D[n*(m-1) - m*(m-1)/2 + i-m] # m < i
-  d_high <- foreach(m=(i+1), .combine='c') %dopar% D[n*(i-1) - i*(i-1)/2 + m-i] # i < m
-  d = c(d_low,d_high)
+  m = 1:(i-1)
+  d_low = D[n*(m-1) - m*(m-1)/2 + i-m]
+  m2 = (i+1):n
+  d_high = D[n*(i-1) - i*(i-1)/2 + m-i]
+  d = c(d_low, Inf, d_high)
   
   # if we are not checking for number of common neighbors
-  if(common ==0){
+  if(common==0){
+    
+    neighbor = rep(0,k)
+    distance = rep(0,k)
+    
+    for(m in 1:k){
+      neighbor[k] = which.min(d)
+      distance = d[neighbor[k]]
+      d = d[-neighbor[k]]
+    }
+    
+    
     neighbors = sort(d, na.last=NA, index.return=TRUE)[1:k]
     distances = d[neighbors]
     

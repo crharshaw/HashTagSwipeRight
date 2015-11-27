@@ -5,3 +5,4 @@ data/
 
 # all python compiled files
 *.pyc
+*.RDS
