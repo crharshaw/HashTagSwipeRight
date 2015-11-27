@@ -12,8 +12,8 @@ cross_val <- function(M, ratings, size, iter, lambda_seq, kfold) {
     
     for(j in 1:kfold){ 
         cat("K=",j)
-        #miss_sample<-sample(1:dim(ratings)[1], 100)
-        #miss_entry<-ratings[miss_sample, c(1,2)]
+        miss_sample<-sample(1:dim(ratings)[1], 100)
+        miss_entry<-ratings[miss_sample, c(1,2)]
         M_cv = Incomplete(ratings[-miss_sample,1], ratings[-miss_sample,2], ratings[-miss_sample,3])
         mcount<-1
         miss_entry<-as.matrix(miss_entry)

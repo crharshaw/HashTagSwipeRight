@@ -20,7 +20,7 @@ iter=5
 
 # Generate max lambda for submatrices so we know what to use
 lam_max<-matrix(,100,1)
-for (k in 1:100) {
+for (k in 1:30) {
     rand_row<-c(sample(1:n , size+100)) 
     rand_col<-c(sample(1:n, size+100))
     Y=M[rand_row, rand_col] #Y is the random submatrix
@@ -29,7 +29,7 @@ for (k in 1:100) {
     mat_mean<-mean(Y[full_num])
     Y[full_num]<-Y[full_num]-mat_mean
 
-    lam_max[k]<-lambda0(Y)
+    lam_max[k]<-lambda0(Y, maxit=200)
 }
 
 lambda_max<-min(lam_max)
