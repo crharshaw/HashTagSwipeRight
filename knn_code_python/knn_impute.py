@@ -20,6 +20,7 @@ def initialize(dataFile, imputeFile, size):
 		impute_entries.append((int(row[0]), int(row[1])))
 =======
 from random import shuffle
+import timeit
 
 def initialize(data_file, impute_file, rate_num_file, size):
 
@@ -100,6 +101,19 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 	# for each entry that we need to impute
 	for ind in impute_entries:
 
+		# timing updates
+		if count >= points[0]:
+			if not quiet:
+				print 'At index ' + str(ind) + '...%2.2f%% finished' % percents[0]
+			percents = percents[1:]
+			points = points[1:]
+		count = count + 1
+
+		# timing
+		ind_time = timeit.default_timer()
+		if not quiet:
+			print 'Imputing ' + str(ind),
+
 		# get row and column of entry
 		i = ind[0]
 		j = ind[1]
@@ -118,9 +132,14 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 >>>>>>> bddf12459b38a897d4d5135e39d81d931abf6491
 		nearest[:,0] = np.inf
 
+		cand_time = 0
 		# for each candidate 
 		for cand in candidates:
 
+<<<<<<< HEAD:knn_code_python/knn_impute.py
+			# timing
+			time1 = timeit.default_timer()
+=======
 <<<<<<< HEAD
 =======
 			# timing updates
@@ -130,6 +149,7 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 				percents = percents[1:]
 				points = points[1:]
 			count = count + 1
+>>>>>>> 40b76dfe2ecb003045f758a87bdb6410bda5915c:knn_code/knn_impute.py
 
 >>>>>>> bddf12459b38a897d4d5135e39d81d931abf6491
 			# store by (min,max)
@@ -148,7 +168,6 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 =======
 			if D[a,b] != 0:
 				d, com = D[a,b]
-				print('\tRe-access!')
 			else:
 
 				# get common indices 
@@ -197,6 +216,9 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 					nearest[m,2] = X[cand,j]
 >>>>>>> bddf12459b38a897d4d5135e39d81d931abf6491
 
+			# timing
+			cand_time = cand_time + (timeit.default_timer() - time1)
+
 		# warning if not enough neighbors
 		if np.any(nearest[:,0]==np.inf):
 			nearest = nearest[nearest[:,0]!=np.inf,:]
@@ -219,6 +241,12 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 		if ctrlStr == 'seq':
 >>>>>>> bddf12459b38a897d4d5135e39d81d931abf6491
 			X[i,j] = imp
+
+		# print timings
+		ind_time = timeit.default_timer() - ind_time
+		if not quiet:
+			print ' total time: %.3f average cand time: %.4f' %(ind_time, cand_time/len(candidates))
+
 
 	# add imputed entries for regular imputation
 	if ctrlStr == 'imp':
