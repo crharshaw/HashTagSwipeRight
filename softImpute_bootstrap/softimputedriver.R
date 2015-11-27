@@ -24,6 +24,11 @@ for (k in 1:100) {
     rand_row<-c(sample(1:n , size+100)) 
     rand_col<-c(sample(1:n, size+100))
     Y=M[rand_row, rand_col] #Y is the random submatrix
+    
+    full_num<-which(Y!=0, arr.ind=TRUE)
+    mat_mean<-mean(Y[full_num])
+    Y[full_num]<-Y[full_num]-mat_mean
+
     lam_max[k]<-lambda0(Y)
 }
 
