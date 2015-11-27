@@ -1,7 +1,5 @@
 
 import knn_impute as knn
-from scipy.io import savemat, loadmat
-import os.path
 
 # initialize data
 print 'Constructing the variables...'

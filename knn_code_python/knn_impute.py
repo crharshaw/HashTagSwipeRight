@@ -4,6 +4,7 @@ import scipy.sparse as sp
 from sklearn import neighbors
 import csv
 from random import shuffle
+import timeit
 
 def initialize(data_file, impute_file, rate_num_file, size):
 
@@ -68,6 +69,19 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 	# for each entry that we need to impute
 	for ind in impute_entries:
 
+		# timing updates
+		if count >= points[0]:
+			if not quiet:
+				print 'At index ' + str(ind) + '...%2.2f%% finished' % percents[0]
+			percents = percents[1:]
+			points = points[1:]
+		count = count + 1
+
+		# timing
+		ind_time = timeit.default_timer()
+		if not quiet:
+			print 'Imputing ' + str(ind),
+
 		# get row and column of entry
 		i = ind[0]
 		j = ind[1]
@@ -79,16 +93,12 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 		nearest = np.zeros((k,3))
 		nearest[:,0] = np.inf
 
+		cand_time = 0
 		# for each candidate 
 		for cand in candidates:
 
-			# timing updates
-			if count >= points[0]:
-				if not quiet:
-					print 'At index ' + str(ind) + '...%2.2f%% finished' % percents[0]
-				percents = percents[1:]
-				points = points[1:]
-			count = count + 1
+			# timing
+			time1 = timeit.default_timer()
 
 			# store by (min,max)
 			a = min(i,cand)
@@ -97,7 +107,6 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 			# check if distance is already computed
 			if D[a,b] != 0:
 				d, com = D[a,b]
-				print('\tRe-access!')
 			else:
 
 				# get common indices 
@@ -128,6 +137,9 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 					nearest[m,1] = c 
 					nearest[m,2] = X[cand,j]
 
+			# timing
+			cand_time = cand_time + (timeit.default_timer() - time1)
+
 		# warning if not enough neighbors
 		if np.any(nearest[:,0]==np.inf):
 			nearest = nearest[nearest[:,0]!=np.inf,:]
@@ -143,6 +155,12 @@ def knn_impute(X, D, k, c, impute_entries, ctrlStr, num_val_row=None, quiet=Fals
 		pred[ind] = imp 
 		if ctrlStr == 'seq':
 			X[i,j] = imp
+
+		# print timings
+		ind_time = timeit.default_timer() - ind_time
+		if not quiet:
+			print ' total time: %.3f average cand time: %.4f' %(ind_time, cand_time/len(candidates))
+
 
 	# add imputed entries for regular imputation
 	if ctrlStr == 'imp':
