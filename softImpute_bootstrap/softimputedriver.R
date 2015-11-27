@@ -54,7 +54,7 @@ source("impute_single.R")
 count=1
 
 rank.max=20
-lam=2.25056
+lam=lam_best
 
 preds<-matrix(,dim(idmap)[1],1)
 
