@@ -20,9 +20,27 @@ rmat_na <- as.matrix(rmat)
 rmat_na[which(rmat_na==0)] = NA # rmat_na has NA where rating is unobserved
 D = daisy(rmat_na) # D_na is a distance matrix with NA where distance is undefined
 
-# save distance matrix
-data = list(idmap=idmap, rmat=rmat, ratings=ratings, D=D)
-saveRDS(data, file="data.RDS")
+
+# Berk, this is the important part -->
+source("knn.R")
+knn_impute_single(rmat, D, idmap[1,], k=5, common=0) # if this runs in less than a second, we could be okay
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # save distance matrix
+# data = list(idmap=idmap, rmat=rmat, ratings=ratings, D=D)
+# saveRDS(data, file="data.RDS")
 
 # look at the distribution of distances to determine where to cut them off?
 distance <- data.frame(d = as.vector(D))
@@ -60,11 +78,11 @@ sprintf('Distance Matrix D is %.3f%% dense',den*100)
 #     https://stat.ethz.ch/R-manual/R-devel/library/cluster/html/dissimilarity.object.html 
 #     ind = size*(i-1) - i*(i-1)/2 + j-i
 
-# not worth it -- this took over 2 hours to construct
-# build the common matrix
-ratings = read.table(rating_file, header=TRUE,sep=",")
-rmat = sparseMatrix(i=ratings[,1],j=ratings[,2],x=ratings[,3])
-C <- 
-foreach(i=1:(size-1), .combine='c') %:% 
-  foreach(j=(i+1):size, .combine='c') %dopar%
-    length(intersect(which(rmat[i,]!=0, arr.ind=TRUE), which(rmat[j,]!=0, arr.ind=TRUE)))
+# # not worth it -- this took over 2 hours to construct
+# # build the common matrix
+# ratings = read.table(rating_file, header=TRUE,sep=",")
+# rmat = sparseMatrix(i=ratings[,1],j=ratings[,2],x=ratings[,3])
+# C <- 
+# foreach(i=1:(size-1), .combine='c') %:% 
+#   foreach(j=(i+1):size, .combine='c') %dopar%
+#     length(intersect(which(rmat[i,]!=0, arr.ind=TRUE), which(rmat[j,]!=0, arr.ind=TRUE)))
