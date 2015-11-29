@@ -21,6 +21,9 @@ max_lambda <- function(M, row_size, col_size, test_num, max_iter=100){
   
   center = TRUE
   
+  n=dim(M)[1]
+  p=dim(M)[2]
+  
   # initialize lambdas
   lambdas <- rep(0, test_num)
   
@@ -37,6 +40,7 @@ max_lambda <- function(M, row_size, col_size, test_num, max_iter=100){
       mean <- mean(A[which(A!=0, arr.ind=TRUE)])
       A <- A - mean
     }
+    A <- as.matrix(A)
     A <- as(A, 'Incomplete')
     
     lambdas[i] <- lambda0(A, maxit=max_iter)
@@ -129,7 +133,7 @@ ensemble_cross_val <- function(ratings, kfold, lambda_seq, row_size, col_size, i
     fold_rows <-ratings[-S[[i]],1]
     fold_cols <- ratings[-S[[i]],2]
     fold_val <- ratings[-S[[i]],3]
-    A <- Incomplete[fold_rows, fold_cols, fold_val]
+    A <- Incomplete(fold_rows, fold_cols, fold_val)
     
     # center?
     if(center){
@@ -141,7 +145,8 @@ ensemble_cross_val <- function(ratings, kfold, lambda_seq, row_size, col_size, i
     for(j in 1:length(lambda_seq)){
       
       # predict values and fill in missing predictions with column means
-      pred_vals <- ensemble_impute(A, pred_ind=ratings[S[[i]],1:2], row_size=row_size, col_size=col_size, iter=iter, lambda=lambda_seq[j], rank.max=rank.max, max_iter=max_iter, warm.start=warm_start)
+      # I removed warm.start arguement: i <= (k - num_obs%%k ), since it appears to be unused
+      pred_vals <- ensemble_impute(A, pred_ind=ratings[S[[i]],1:2], row_size=row_size, col_size=col_size, iter=iter, lambda=lambda_seq[j], rank.max=rank.max, max_iter=max_iter)
       na_ind <- which(is.na(pred_vals),arr.ind=TRUE) # yikes, sorry berk
       pred_vals[na_ind] <- Pmeans[ ratings[ S[[i]][na_ind],2] ] # fill in with column means (is this right??) 
       
@@ -183,7 +188,7 @@ ensemble_impute <- function(M, pred_ind, row_size, col_size, iter, lambda, rank.
   # create matrices to store imputed values and counts
   n <- nrow(M)
   p <- ncol(M)
-  val_mats <- matrix(0,n,p)
+  val_mat <- matrix(0,n,p)
   count_mat <- matrix(0,n,p) 
   svd_obj <- NULL
   
@@ -202,6 +207,7 @@ ensemble_impute <- function(M, pred_ind, row_size, col_size, iter, lambda, rank.
     }
     
     # impute!
+    A<-as.matrix(A)
     A <- as(A, "Incomplete")
     svd_obj <- softImpute(Y, rank.max=rank.max, lambda=lambda, type='als', maxit=max_iter)
     A_hat <- complete(A, svd_obj, unscale=TRUE)
