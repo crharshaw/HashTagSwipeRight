@@ -209,7 +209,7 @@ ensemble_impute <- function(M, pred_ind, row_size, col_size, iter, lambda, rank.
     # impute!
     A<-as.matrix(A)
     A <- as(A, "Incomplete")
-    svd_obj <- softImpute(Y, rank.max=rank.max, lambda=lambda, type='als', maxit=max_iter)
+    svd_obj <- softImpute(A, rank.max=rank.max, lambda=lambda, type='als', maxit=max_iter)
     A_hat <- complete(A, svd_obj, unscale=TRUE)
     
     # update value and count matrices
