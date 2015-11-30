@@ -36,10 +36,11 @@ max_lambda <- function(M, row_size, col_size, test_num, max_iter=100){
     A <- M[rand_row, rand_col]
     
     # mean center
-    if(center){
-      mean <- mean(A[which(A!=0, arr.ind=TRUE)])
-      A <- A - mean
-    }
+  if(center){
+    full_num<-which(A!=0, arr.ind=TRUE)
+    mat_mean<-mean(A[full_num])
+    A[full_num]<-A[full_num]-mat_mean
+  }
     A <- as.matrix(A)
     A <- as(A, 'Incomplete')
     
@@ -137,7 +138,8 @@ ensemble_cross_val <- function(ratings, kfold, lambda_seq, row_size, col_size, i
     
     # center?
     if(center){
-      A <- A - mean(fold_val)
+      full_num<-which(A!=0, arr.ind=TRUE)
+      A[full_num] <- A[full_num] - mean(fold_val)
     }
     
     warm_start = NULL
@@ -201,16 +203,19 @@ ensemble_impute <- function(M, pred_ind, row_size, col_size, iter, lambda, rank.
     A <- M[rand_row, rand_col]
     
     # mean center
-    if(center){
-      mean <- mean(A[which(A!=0, arr.ind=TRUE)])
-      A <- A - mean
-    }
+  if(center){
+    full_num<-which(A!=0, arr.ind=TRUE)
+    mat_mean<-mean(A[full_num])
+    A[full_num]<-A[full_num]-mat_mean
+  }
     
     # impute!
-    A<-as.matrix(A)
     A <- as(A, "Incomplete")
     svd_obj <- softImpute(A, rank.max=rank.max, lambda=lambda, type='als', maxit=max_iter)
     A_hat <- complete(A, svd_obj, unscale=TRUE)
+    if(center) {
+      A_hat <- A_hat + mat_mean
+    }
     
     # update value and count matrices
     val_mat[rand_row, rand_col] <- val_mat[rand_row, rand_col] + A_hat
@@ -220,6 +225,7 @@ ensemble_impute <- function(M, pred_ind, row_size, col_size, iter, lambda, rank.
   
   # return predicted entries 
   pred_mat <- val_mat / count_mat
-  pred_vals <- pred_mat[pred_ind[,1], pred_ind[,2]]
+  sup<-cbind(pred_ind[,1], pred_ind[,2])
+  pred_vals <- pred_mat[sup]
   return(pred_vals) 
 }
